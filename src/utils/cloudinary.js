@@ -1,7 +1,7 @@
 import {v2 as cloudinary } from "cloudinary"
 import fs from "fs"
 
-import { v2 as cloudinary } from 'cloudinary';
+
 
 
     cloudinary.config({ 
@@ -18,12 +18,23 @@ import { v2 as cloudinary } from 'cloudinary';
                 resource_type:"auto"
             })            
             //file has been uploaded successfull
-            console.log("file is uploaded on cloudinary",
-                response.url
-            );
+            // console.log("file is uploaded on cloudinary",
+            //     response.url
+            // );
+            // console.log(response);
             return response;
         } catch (error) {
-            fs.unlinkSync(localFilePath)// remove the locally saved tempoary file as the upload operation got failed
+            console.error("Cloudinary upload failed:",error.message);
+            return null;
+            
+        }finally{
+            fs.unlink(localFilePath,(err)=>{
+                if(err){
+                    if(err.code !=="ENOENT"){
+                        console.error("Failed to delete local file:",localFilePath,err)
+                    }
+                }
+            })
         }
     }
     

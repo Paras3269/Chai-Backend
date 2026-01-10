@@ -4,7 +4,7 @@ import {User} from '../models/user.model.js'
 import {uploadOnCloudinary} from '../utils/cloudinary.js'
 import {ApiResponse} from '../utils/ApiResponse.js'
 import jwt from "jsonwebtoken";
-
+import mongoose from 'mongoose';
 const generateAccessAndRefreshTokens = async(userId)=>{
   try {
     const user = await User.findById(userId)
@@ -154,8 +154,8 @@ const logoutUser = asyncHandler(async(req,res)=>{
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set:{
-        refreshToken:undefined
+      $unset:{
+        refreshToken:1
       }
     },
     {
@@ -202,7 +202,7 @@ const refreshAccessToken = asyncHandler(async (req,res) =>{
   const {accessToken,newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
     
    return res
-   .status
+   .status(200)
    .cookie("accessToken",accessToken,options)
    .cookie("refreshToken",newRefreshToken,options)
    .json(
@@ -366,7 +366,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
               $size:"$subscribers"
            },
            channelsSubscribedToCount:{
-              $size:"subscribedTo"
+              $size:"$subscribedTo"
            },
            isSubscribed:{
               $cond:{
@@ -415,14 +415,14 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
           localField:"watchHistory",
           foreignField:"_id",
           as:"watchHistory",
-          pipleline:[
+          pipeline:[
             {
               $lookup:{
                 from:"users",
                 localField:"owner",
                 foreignField:"_id",
                 as:"owner",
-                 pipleline:[
+                 pipeline:[
                   {
                     $project:{//write this pipeline outside the owner field 
                       fullName:1,

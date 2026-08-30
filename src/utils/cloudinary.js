@@ -37,6 +37,20 @@ import fs from "fs"
             })
         }
     }
+
+    const deleteOnCloudinary = async (url)=>{
+        try{
+            const parts = url.split("/upload/");
+            const path = parts[1];
+            const publicIdWithVersionRemoved = path.replace(/^v\d+\//, "");
+            const publicId = publicIdWithVersionRemoved.replace(/\.[^/.]+$/, "");
+
+            await cloudinary.uploader.destroy(publicId);
+        }
+        catch(error){
+             console.error("Cloudinary delete failed:",error.message);
+        }
+    }
     
 
     export {uploadOnCloudinary}
